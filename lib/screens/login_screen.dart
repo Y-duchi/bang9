@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 import 'sign_up_screen.dart'; // SignUpPage가 들어 있는 파일 import
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../constants.dart';
+
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -165,11 +168,43 @@ class LoginScreen extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CircleAvatar(radius: 30, backgroundColor: const Color(0xFFFFE105)),
+                    // ✅ 카카오 로그인 버튼
+                    GestureDetector(
+                      onTap: signInWithKakao,
+                      child: const CircleAvatar(
+                        radius: 30,
+                        backgroundColor: Color(0xFFFFE105), // 카카오 노랑
+                        child: Icon(Icons.chat, color: Colors.brown), // 아이콘도 변경 가능
+                      ),
+                    ),
                     const SizedBox(width: 20),
-                    CircleAvatar(radius: 30, backgroundColor: const Color(0xFF69FF05)),
+
+                    // ✅ 네이버 로그인 버튼
+                    GestureDetector(
+                      onTap: () {
+                        // 여기에 네이버 로그인 함수 작성 또는 연결
+                        print('네이버 로그인 클릭됨');
+                      },
+                      child: const CircleAvatar(
+                        radius: 30,
+                        backgroundColor: Color(0xFF03C75A), // 네이버 녹색
+                        child: Icon(Icons.nature, color: Colors.white),
+                      ),
+                    ),
                     const SizedBox(width: 20),
-                    CircleAvatar(radius: 30, backgroundColor: const Color(0xFFFFDADA)),
+
+                    // ✅ 구글 로그인 버튼
+                    GestureDetector(
+                      onTap: () {
+                        // 여기에 구글 로그인 함수 작성 또는 연결
+                        print('구글 로그인 클릭됨');
+                      },
+                      child: const CircleAvatar(
+                        radius: 30,
+                        backgroundColor: Color(0xFFFFDADA), // 구글 스타일 색상
+                        child: Icon(Icons.email, color: Colors.redAccent),
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -178,5 +213,31 @@ class LoginScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+
+Future<void> signInWithKakao() async {
+  if (await isKakaoTalkInstalled()) {
+    try {
+      await UserApi.instance.loginWithKakaoTalk();
+      print('카카오톡으로 로그인 성공');
+    } catch (error) {
+      print('카카오톡으로 로그인 실패 $error');
+      if (error is PlatformException && error.code == 'CANCELED') return;
+      try {
+        await UserApi.instance.loginWithKakaoAccount();
+        print('카카오계정으로 로그인 성공');
+      } catch (error) {
+        print('카카오계정으로 로그인 실패 $error');
+      }
+    }
+  } else {
+    try {
+      await UserApi.instance.loginWithKakaoAccount();
+      print('카카오계정으로 로그인 성공');
+    } catch (error) {
+      print('카카오계정으로 로그인 실패 $error');
+    }
   }
 }
