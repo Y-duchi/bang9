@@ -25,8 +25,22 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
+      title: '방꾸석',
       debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        scaffoldBackgroundColor: Colors.white,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black,
+          elevation: 0.5,
+        ),
+        colorScheme: const ColorScheme.light(
+          primary: Colors.brown,
+          background: Colors.white,
+        ),
+        fontFamily: 'Pretendard',
+      ),
       home: LoginScreen(),
     );
   }

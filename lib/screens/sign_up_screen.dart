@@ -20,7 +20,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final emailController = TextEditingController();
   final emailCodeController = TextEditingController();
 
-  // 아이디 중복 확인 함수
+  bool isEmailVerified = false;  // 이메일 인증 성공 여부
+
+  // 아이디 중복 확인 API
   Future<void> checkDuplicateId() async {
     var url = Uri.parse('$baseUrl/check_user_id/');
     var response = await http.post(
@@ -37,7 +39,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  // 회원가입 함수
+  // 회원가입 API
   Future<void> register() async {
     var url = Uri.parse('$baseUrl/register/');
 
@@ -64,7 +66,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
   }
 
-  // 이메일 인증번호 전송 함수
+  // 이메일 인증번호 전송 API
   void sendEmailCode() async {
     var url = Uri.parse('$baseUrl/send_email_verification/');
     var response = await http.post(
@@ -80,7 +82,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  // 이메일 인증번호 확인 함수
+  // 이메일 인증번호 확인 API
   void verifyEmailCode() async {
     var url = Uri.parse('$baseUrl/verify_email_code/');
     var response = await http.post(
@@ -93,10 +95,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
 
     var data = jsonDecode(utf8.decode(response.bodyBytes));
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(content: Text(data['message'])),
-    );
+
+    if (data['success']) {
+      setState(() {
+        isEmailVerified = true; // ✅ 인증 성공 상태 저장
+      });
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(content: Text(data['message'])),
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(content: Text(data['message'])),
+      );
+    }
   }
 
   Widget _buildTextField(String label, String hint, TextEditingController controller, {Widget? suffix, bool obscure = false}) {
@@ -190,7 +203,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
             borderRadius: BorderRadius.circular(20),
           ),
         ),
-        onPressed: register,
+        onPressed: () {
+          if (!isEmailVerified) {
+            showDialog(
+              context: context,
+              builder: (context) => const AlertDialog(
+                content: Text('이메일 인증을 완료해주세요.'),
+              ),
+            );
+            return;
+          }
+          // 이메일 인증 시 회원가입
+          register();
+        },
         child: const Text('가입하기', style: TextStyle(fontWeight: FontWeight.bold)),
       ),
     );
@@ -200,8 +225,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F4F4),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFF4F4F4),
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ),
       body: ListView(
-        padding: const EdgeInsets.only(top: 60, bottom: 30),
+        padding: const EdgeInsets.only(bottom: 30),
         children: [
           const Center(
             child: Text('회원가입', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),

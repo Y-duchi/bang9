@@ -1,3 +1,4 @@
+import 'package:bang9_test/screens/shopping.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
@@ -5,7 +6,7 @@ import 'sign_up_screen.dart'; // SignUpPage가 들어 있는 파일 import
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../constants.dart';
-
+import 'main2.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -15,7 +16,7 @@ class LoginScreen extends StatelessWidget {
     final idController = TextEditingController();
     final pwController = TextEditingController();
 
-    // 로그인 함수
+    // 로그인 API
     Future<void> login() async {
       var url = Uri.parse('$baseUrl/login/');
       var response = await http.post(
@@ -30,10 +31,9 @@ class LoginScreen extends StatelessWidget {
       var data = jsonDecode(utf8.decode(response.bodyBytes));
 
       if (data['success']) {
-        showDialog(
-          context: context,
-          builder: (context) =>
-              AlertDialog(content: Text(data['message'])),
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const MainPage()),
         );
       } else {
         showDialog(
@@ -169,12 +169,13 @@ class LoginScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     // ✅ 카카오 로그인 버튼
+                    // 카카오 로그인 버튼
                     GestureDetector(
-                      onTap: signInWithKakao,
+                      onTap: () => signInWithKakao(context),
                       child: const CircleAvatar(
                         radius: 30,
-                        backgroundColor: Color(0xFFFFE105), // 카카오 노랑
-                        child: Icon(Icons.chat, color: Colors.brown), // 아이콘도 변경 가능
+                        backgroundColor: Color(0xFFFFE105),
+                        child: Icon(Icons.chat, color: Colors.brown),
                       ),
                     ),
                     const SizedBox(width: 20),
@@ -217,17 +218,25 @@ class LoginScreen extends StatelessWidget {
 }
 
 
-Future<void> signInWithKakao() async {
+Future<void> signInWithKakao(BuildContext context) async {
   if (await isKakaoTalkInstalled()) {
     try {
       await UserApi.instance.loginWithKakaoTalk();
       print('카카오톡으로 로그인 성공');
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const ShoppingPage()),
+      );
     } catch (error) {
       print('카카오톡으로 로그인 실패 $error');
       if (error is PlatformException && error.code == 'CANCELED') return;
       try {
         await UserApi.instance.loginWithKakaoAccount();
         print('카카오계정으로 로그인 성공');
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const ShoppingPage()),
+        );
       } catch (error) {
         print('카카오계정으로 로그인 실패 $error');
       }
@@ -236,6 +245,10 @@ Future<void> signInWithKakao() async {
     try {
       await UserApi.instance.loginWithKakaoAccount();
       print('카카오계정으로 로그인 성공');
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const ShoppingPage()),
+      );
     } catch (error) {
       print('카카오계정으로 로그인 실패 $error');
     }
